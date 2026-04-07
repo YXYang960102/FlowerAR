@@ -2,111 +2,83 @@
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR - Jeremy's Project</title>
+    <title>AR - Jeremy's project</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
 
     <script>
-
+   
       AFRAME.registerComponent('osmanthus-petal', {
-        schema: {
-          speed: {type: 'number', default: 0.005},
-          wind: {type: 'number', default: 0.002}
-        },
-        init: function () {
-          this.resetPetal();
-        },
+        init: function () { this.resetPetal(); },
         resetPetal: function () {
-
-          const x = (Math.random() - 0.5) * 1.6;
-          const y = 0.5 + Math.random() * 0.7;
-          const z = (Math.random() - 0.5) * 0.3;
-          
+          const x = (Math.random() - 0.5) * 2;
+          const y = 0.6 + Math.random() * 0.8; 
+          const z = (Math.random() - 0.5) * 0.5;
           this.el.setAttribute('position', {x: x, y: y, z: z});
           
-          this.el.setAttribute('rotation', {
-            x: Math.random() * 360, 
-            y: Math.random() * 360, 
-            z: Math.random() * 360
-          });
-
-
-          const finalScale = 0.1 + Math.random() * 0.1;
+          const finalScale = 0.08 + Math.random() * 0.12;
           this.el.setAttribute('scale', '0 0 0');
           this.el.setAttribute('animation__spawn', {
-            property: 'scale',
-            to: `${finalScale} ${finalScale} ${finalScale}`,
-            dur: 800,
-            easing: 'easeOutBack'
+            property: 'scale', to: `${finalScale} ${finalScale} ${finalScale}`,
+            dur: 1000, easing: 'easeOutBack'
           });
 
-          this.dropSpeed = this.data.speed + Math.random() * 0.005;
-          this.rotSpeed = (Math.random() - 0.5) * 2;
-          this.phase = Math.random() * Math.PI * 2; 
+          this.dropSpeed = 0.004 + Math.random() * 0.006;
+          this.rotSpeed = (Math.random() - 0.5) * 3;
+          this.phase = Math.random() * Math.PI * 2;
         },
-        tick: function (time, deltaTime) {
+        tick: function (time) {
           let pos = this.el.getAttribute('position');
           let rot = this.el.getAttribute('rotation');
-
           pos.y -= this.dropSpeed;
-          
-          pos.x += Math.sin(time / 500 + this.phase) * this.data.wind;
-          
-     
+          pos.x += Math.sin(time / 600 + this.phase) * 0.003;
           rot.z += this.rotSpeed;
-          rot.x += this.rotSpeed * 0.5;
-
           this.el.setAttribute('position', pos);
           this.el.setAttribute('rotation', rot);
-
-          
-          if (pos.y < -1.0) {
-            this.resetPetal();
-          }
+          if (pos.y < -1.2) this.resetPetal();
         }
       });
+
       AFRAME.registerComponent('petal-generator', {
         init: function () {
-          for (let i = 0; i < 15; i++) {
+          for (let i = 0; i < 40; i++) {
             let p = document.createElement('a-plane');
             p.setAttribute('src', '#flowerImg');
             p.setAttribute('transparent', 'true');
             p.setAttribute('osmanthus-petal', '');
-            p.setAttribute('material', 'alphaTest: 0.5; side: double'); // 雙面顯示並優化透明度
+            p.setAttribute('material', 'alphaTest: 0.5; side: double');
             this.el.appendChild(p);
           }
         }
       });
     </script>
-
-    <style>
-      #ui-overlay {
-        position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-        color: white; font-family: sans-serif; background: rgba(0,0,0,0.5);
-        padding: 10px 20px; border-radius: 20px; z-index: 10; pointer-events: none;
-      }
-    </style>
   </head>
 
   <body>
-    <div id="ui-overlay">請對準桂花圖</div>
-
     <a-scene 
       mindar-image="imageTargetSrc: ./assets/targets.mind; filterMinCF:0.001; filterBeta: 0.01;" 
-      color-space="sRGB" 
-      renderer="colorManagement: true, physicallyCorrectLights" 
-      vr-mode-ui="enabled: false" 
-      device-orientation-permission-ui="enabled: false">
+      color-space="sRGB" renderer="colorManagement: true" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       
       <a-assets>
         <img id="flowerImg" src="./assets/flower.png">
+        <img id="treeImg" src="./assets/tree.png"> 
       </a-assets>
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <a-entity mindar-image-target="targetIndex: 0" petal-generator>
-        </a-entity>
-      
+      <a-entity mindar-image-target="targetIndex: 0">
+        
+        <a-entity petal-generator></a-entity>
+
+        <a-image src="#treeImg" position="-0.7 -0.4 0.1" width="1.2" height="1.2"
+                 animation="property: rotation; from: 0 0 -3; to: 0 0 3; dur: 3000; dir: alternate; loop: true; easing: easeInOutSine">
+        </a-image>
+
+        <a-image src="#treeImg" position="0.7 -0.5 0.1" width="1.5" height="1.5" scale="-1 1 1"
+                 animation="property: rotation; from: 0 0 2; to: 0 0 -4; dur: 3500; dir: alternate; loop: true; easing: easeInOutSine">
+        </a-image>
+
+      </a-entity>
     </a-scene>
   </body>
 </html>
